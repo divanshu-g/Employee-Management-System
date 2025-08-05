@@ -11,7 +11,7 @@ enum RoleType {
   superAdmin
   subAdmin
   employee
-}
+} 
 
 enum Gender {
   Male

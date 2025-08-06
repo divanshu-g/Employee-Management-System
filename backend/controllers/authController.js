@@ -24,27 +24,34 @@ async function login(req, res, next) {
         }
       }
     });
-    if (!user) return res.status(401).json({ message: 'Invalid Email' });
-   
+
+    if (!user) return res.status(401).json({ message: 'Invalid credentials' });
 
     // 2. Compare passwords
     const validPass = await bcrypt.compare(password, user.password_hash);
-    if (!validPass) return res.status(401).json({ message: 'Invalid Password' });
+    if (!validPass) return res.status(401).json({ message: 'Invalid credentials' });
 
     // 3. Check if user has at least one allowed role
     const roles = user.user_roles.map(ur => ur.role.role_type);
-
     const hasAllowedRole = roles.some(r => ALLOWED_ROLES.includes(r));
 
     if (!hasAllowedRole) {
       return res.status(403).json({ message: 'User is not authorized to login' });
     }
 
+    //lastlogin attached whenever login happenns 
+    await prisma.user.update({
+      where: { email },
+      data: {
+        last_login: new Date(), // stores current timestamp
+      },
+    });
+
     // 4. Generate JWT token with user info and roles
     const tokenPayload = {
       userId: user.user_id,
       email: user.email,
-      roles: roles
+      roles: roles,
     };
 
     const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '1h' });

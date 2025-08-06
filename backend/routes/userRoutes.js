@@ -1,16 +1,12 @@
 const express = require('express');
 const router = express.Router();
+const userController = require('../controllers/userController');
+const authMiddleware = require('../middlewares/authMiddleware');
+const roleMiddleware = require('../middlewares/roleMiddleware');
 
-const { createUser } = require('../controllers/userController');
-// Import createEmployee only if implemented and exported
-// const { createEmployee } = require('../controllers/userController');
+// All user management routes require authentication and either superAdmin or subAdmin role
+const managementRoles = ['superAdmin', 'subAdmin'];
 
-const { requireAuth, requireRole } = require('../middlewares/auth');
-
-// Only superAdmin can create subAdmin
-router.post('/createUser', requireAuth, requireRole('superAdmin'), createUser);
-
-// Uncomment and use this route only if createEmployee exists and is exported
-// router.post('/employee', requireAuth, requireRole('superAdmin', 'subAdmin'), createEmployee);
+router.get('/', authMiddleware, roleMiddleware(managementRoles), userController.getallUsers);
 
 module.exports = router;

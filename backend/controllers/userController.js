@@ -1,34 +1,34 @@
 const prisma = require('../prismaClient');
 const bcrypt = require('bcrypt');
 
-async function createUser(req, res) {
-  const { email, password } = req.body;
+const ALLOWED_MANAGEMENT_ROLES = ['superAdmin','subAdmin'];
 
-  if (!email || !password) {
-    return res.status(400).json({ message: 'Email and password are required.' });
-  }
+//get all User
+async function getallUsers(req,res,next) {
+    try{
+        const users = await prisma.user.findMany({
+            include : {
+                user_roles : {include : {role:true}},
+            }
+        });
 
-  // Check if user already exists
-  const existingUser = await prisma.user.findUnique({ where: { email } });
-  if (existingUser) {
-    return res.status(409).json({ message: 'User already exists with this email.' });
-  }
+        const result = users.map(user => ({
+            user_id : user.user_id,
+            email : user.email,
+            is_active : user.is_active,
+            roles : user.user_roles.map(ur => ur.role.role_type),
+            created_at : user.created_at,
+            updated_at : user.updated_at,
+            last_login : user.last_login
+        }));
 
-  // Hash password
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  // Create User record (no related roles or employee yet)
-  const user = await prisma.user.create({
-    data: {
-      email,
-      password_hash: hashedPassword,
-      // You can add other core fields here if you want (e.g. is_active default is true)
+        res.json(result);
     }
-  });
 
-  return res.status(201).json({ message: 'User created successfully', userId: user.user_id });
+    catch(error){
+        next(error);
+    }
 }
 
-module.exports = {
-  createUser,
-};
+
+module.exports = {getallUsers};

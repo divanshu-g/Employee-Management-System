@@ -6,6 +6,8 @@ const authRoutes = require('./routes/authRoutes');
 const authMiddleware = require('./middlewares/authMiddleware');
 const roleMiddleware = require('./middlewares/roleMiddleware');
 const userRoutes = require('./routes/userRoutes'); 
+const roleRoutes = require("./routes/roleRoutes");
+const userRoleRoutes = require("./routes/userRoleRoutes");
 
 const PORT = process.env.PORT || 3000;
 
@@ -14,7 +16,9 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes); 
+app.use('/api/user', userRoutes); 
+app.use('/api/role', roleRoutes);
+app.use("/api/userRole", userRoleRoutes)
 
 // Example protected route:
 app.get('/api/protected', authMiddleware, roleMiddleware(['superAdmin', 'subAdmin', 'employee']), (req, res) => {

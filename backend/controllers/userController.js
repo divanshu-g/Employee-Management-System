@@ -100,4 +100,72 @@ async function createUser(req, res, next) {
   }
 }
 
-module.exports = {getallUsers, getUserById, createUser};
+async function updateUserPass(req,res){  //forgot password functionality
+  const id = parseInt(req.params.id);
+  const {password} = req.body;
+
+  if(!password){
+    return res.status(400).json({message : "Enter Email"});
+  }
+
+  try{
+    const salt = 10;
+    const hashedpass = await bcrypt.hash(password , salt);
+    const userpass = await prisma.user.update({
+      where : {user_id  : id},
+      data : {
+        password_hash : hashedpass
+      }
+    })
+    return res.status(200).json({message : "Password updated sexfully"},userpass);
+  }
+  catch(error){
+    return res.status(500).json({message : "Failed to update"});
+  }
+}
+
+async function inactiveUser(req,res){
+ const userid = parseInt(req.params.id,10);
+  if(!userid){
+    return res.status(400).json({message : "Please enter Email"});
+  }
+  try{
+
+  const inactive = await prisma.user.update({
+    where : {user_id : userid},
+    data:{
+      is_active : false
+    }
+  })
+  
+
+  return res.status(200).json({message : "user Deactivated"})
+}
+catch(error){
+  return res.status.json({message: "Unable to Update"});
+}
+}
+
+async function activeUser(req,res){
+ const userid = parseInt(req.params.id,10);
+  if(!userid){
+    return res.status(400).json({message : "Please enter Email"});
+  }
+  try{
+
+  const inactive = await prisma.user.update({
+    where : {user_id : userid},
+    data:{
+      is_active : true
+    }
+  })
+  
+
+  return res.status(200).json({message : "user Activated"})
+}
+catch(error){
+  return res.status.json({message: "Unable to Update"});
+}
+}
+
+module.exports = {getallUsers, getUserById, createUser , updateUserPass , inactiveUser,  activeUser};

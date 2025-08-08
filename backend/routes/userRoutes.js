@@ -9,9 +9,6 @@ const managementRoles = ['superAdmin', 'subAdmin'];
 
 router.post('/',authMiddleware, roleMiddleware(managementRoles), userController.createUser);
 router.get('/', authMiddleware, roleMiddleware(managementRoles), userController.getallUsers);
-router.get('/:id', authMiddleware, roleMiddleware(managementRoles), userController.getUserById)
-router.put('/:id', authMiddleware, userController.updateUserPass);
-router.delete('/deactivate/:id',authMiddleware,roleMiddleware(managementRoles),userController.inactiveUser);
-router.put('/activate/:id',authMiddleware,roleMiddleware(managementRoles),userController.activeUser);
+router.get('/:id', authMiddleware, roleMiddleware(managementRoles), userController.getUserById);
 
 module.exports = router;

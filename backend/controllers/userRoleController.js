@@ -2,18 +2,29 @@ const prisma = require("../prismaClient")
 const bcrypt = require("bcrypt")
 
 async function assignRolesToUser(req, res) {
+  // Log the entire request body to verify incoming data
+  console.log('Request Body:', req.body);
+
   // Destructure snake_case keys from the request body
   const { user_id, role_id } = req.body;
   const assigner_id = req.user.user_id;
 
+  // Log each parameter individually
+  console.log('user_id:', user_id);
+  console.log('role_id:', role_id);
+  console.log('assigned_by_id:', assigner_id);
+
   // Basic validation to check for missing parameters
   if (!user_id) {
+    console.log('user_id is missing or invalid');
     return res.status(400).json({ error: 'user_id is required.' });
   }
   if (!role_id) {
+    console.log('role_id is missing or invalid');
     return res.status(400).json({ error: 'role_id is required.' });
   }
   if (!assigner_id) {
+    console.log('assigned_by_id is missing or invalid');
     return res.status(400).json({ error: 'assigned_by_id is required.' });
   }
 
@@ -23,8 +34,10 @@ async function assignRolesToUser(req, res) {
       where: { role_id: role_id },
       select: { role_type: true }
     });
+    console.log('Fetched targetRole:', targetRole);
 
     if (!targetRole) {
+      console.log(`No role found with role_id: ${role_id}`);
       return res.status(404).json({ error: 'Target role not found' });
     }
 
@@ -33,25 +46,31 @@ async function assignRolesToUser(req, res) {
       where: { user_id: assigner_id, is_active: true },
       include: { role: true }
     });
+    console.log('Fetched assignedByUserRoleRecord:', assignedByUserRoleRecord);
 
     if (!assignedByUserRoleRecord) {
+      console.log(`No active role found for assigning user with user_id: ${assigner_id}`);
       return res.status(403).json({ error: 'Assigning user role not found or inactive' });
     }
 
     const assigningRoleType = assignedByUserRoleRecord.role.role_type;
     const targetRoleType = targetRole.role_type;
 
+    console.log(`Assigning role_type: ${assigningRoleType}, target role_type: ${targetRoleType}`);
 
     // Permission logic based on the role_type enums
     if (assigningRoleType === 'superAdmin') {
       if (!['superAdmin', 'subAdmin', 'employee'].includes(targetRoleType)) {
+        console.log("Permission denied: SuperAdmin can only assign 'superAdmin', 'subAdmin', or 'employee' roles.");
         return res.status(403).json({ error: "SuperAdmin can only assign 'superAdmin', 'subAdmin', or 'employee' roles." });
       }
     } else if (assigningRoleType === 'subAdmin') {
       if (targetRoleType !== 'employee') {
+        console.log("Permission denied: SubAdmin can only assign 'employee' role.");
         return res.status(403).json({ error: "SubAdmin can only assign 'employee' role." });
       }
     } else {
+      console.log('Permission denied: User is not allowed to assign roles.');
       return res.status(403).json({ error: 'You are not allowed to assign roles.' });
     }
 
@@ -65,65 +84,14 @@ async function assignRolesToUser(req, res) {
       }
     });
 
+    console.log('Created userRole record:', userRole);
     return res.status(201).json(userRole);
 
   } catch (error) {
+    // Log detailed error information on failure
+    console.error('Error assigning user to role:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
 
-async function getUserRole(req,res) {
-  try{
-    const UserRole = await prisma.userRole.findMany();
-    return res.status(200).json({UserRole});
-  }
-  catch(error){
-      return res.status(500).json({message : "UserRole not found"});
-  }
-  
-}
-
-async function getUserRoleById(req,res) {
-  const id = parseInt(req.params.id,10);
-  try{
-    const UserRoleById = await prisma.userRole.findUnique({
-      where : {user_role_id : id}
-    });
-
-    if(!UserRoleById){
-      return res.status(400).json({message: "UserRole id not found"});
-    }
-
-    return res.status(200).json({message : "Userfound",UserRoleById})
-
-  }catch(error){
-    return res.status(500).json({message : "Internal server error 500"})
-  }  
-}
-
-async function updateUserRole(req, res) {
-  const id = parseInt(req.params.id, 10);
-
-  // Only allow is_active to be updated for safety
-  const { is_active } = req.body;
-
-  if (typeof is_active !== 'boolean') {
-    return res.status(400).json({ message: 'is_active (boolean) is required for update.' });
-  }
-
-  try {
-    const userRole = await prisma.userRole.update({
-      where: { user_role_id: id },
-      data: { is_active }
-    });
-    return res.status(200).json(userRole);
-  } catch (error) {
-    if (error.code === 'P2025') {
-      return res.status(404).json({ message: 'UserRole not found' });
-    }
-    return res.status(500).json({ message: 'Internal server error 500' });
-  }
-}
-
-
-module.exports = {assignRolesToUser , getUserRole, getUserRoleById , updateUserRole}
+module.exports = {assignRolesToUser}

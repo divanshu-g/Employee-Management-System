@@ -7,6 +7,124 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  user_id            Int          @id @default(autoincrement())
+  email              String       @unique
+  password_hash      String
+  is_active          Boolean      @default(true)
+  last_login         DateTime?
+  created_at         DateTime     @default(now())
+  updated_at         DateTime     @default(now()) @updatedAt
+  departmentsCreated Department[] @relation("CreatedByUser")
+  departmentsUpdated Department[]  @relation("UpdatedByUser")
+  employeesCreated   Employee[]   @relation("CreatedBy")
+  employeesUpdated   Employee[]   @relation("UpdatedBy")
+  employees          Employee[]
+  assignedUserRoles  UserRole[]   @relation("AssignedBy")
+  user_roles         UserRole[]
+}
+
+model Role {
+  role_id          Int        @id @default(autoincrement())
+  role_name        String     @unique
+  role_type        RoleType
+  role_description String?
+  permissions      Json?
+  is_active        Boolean    @default(true)
+  created_at       DateTime   @default(now())
+  user_roles       UserRole[]
+}
+
+model UserRole {
+  user_role_id   Int      @id @default(autoincrement())
+  user_id        Int
+  role_id        Int
+  assigned_at    DateTime @default(now())
+  assigned_by_id Int?
+  is_active      Boolean  @default(true)
+  assigned_by    User?    @relation("AssignedBy", fields: [assigned_by_id], references: [user_id])
+  role           Role     @relation(fields: [role_id], references: [role_id])
+  user           User     @relation(fields: [user_id], references: [user_id])
+  @@unique([user_id,role_id])
+}
+
+model Department {
+  department_id        Int          @id @default(autoincrement())
+  department_name      String
+  department_code      String       @unique
+  description          String?
+  parent_department_id Int?
+  created_at           DateTime     @default(now())
+  updated_at           DateTime     @default(now()) @updatedAt
+  is_active            Boolean      @default(true)
+  created_by_id        Int
+  updated_by_id        Int?
+  department_head_id   Int?
+  created_by           User         @relation("CreatedByUser", fields: [created_by_id], references: [user_id])
+  updated_by           User?        @relation("UpdatedByUser", fields: [updated_by_id], references: [user_id])
+  department_head      Employee?    @relation("DepartmentHead", fields: [department_head_id], references: [emp_id])
+  parent_department    Department?  @relation("ParentDepartment", fields: [parent_department_id], references: [department_id])
+  children             Department[] @relation("ParentDepartment")
+  employees            Employee[]   @relation("DepartmentEmployees")
+  positions            Position[]
+}
+
+model Position {
+  position_id      Int        @id @default(autoincrement())
+  position_title   String
+  position_code    String     @unique
+  job_description  String?
+  required_skills  Json?
+  salary           Float?
+  position_level   Int?
+  is_active        Boolean    @default(true)
+  department_id    Int
+  created_at       DateTime     @default(now())  
+  updated_at       DateTime     @default(now()) @updatedAt
+  employees        Employee[]
+  department       Department @relation(fields: [department_id], references: [department_id])
+}
+
+model Employee {
+  emp_id                Int               @id @default(autoincrement())
+  user_id               Int?
+  employee_code         String            @unique
+  first_name            String
+  last_name             String
+  personal_email        String?
+  phone_number          String?
+  emergency_contact     Json?
+  date_of_birth         DateTime?
+  gender                Gender?
+  address               Json?
+  department_id         Int?
+  position_id           Int?
+  employment_type       EmploymentType?
+  work_location         WorkLocation?
+  hire_date             DateTime
+  probation_end_date    DateTime?
+  confirmation_date     DateTime?
+  termination_date      DateTime?
+  direct_manager_id     Int?
+  skip_level_manager_id Int?
+  employment_status     EmploymentStatus? @default(Active)
+  is_people_manager     Boolean           @default(false)
+  created_at            DateTime          @default(now())
+  created_by_id         Int?
+  updated_at            DateTime          @default(now()) @updatedAt
+  updated_by_id         Int?
+  heads_departments     Department[]      @relation("DepartmentHead")
+  created_by            User?             @relation("CreatedBy", fields: [created_by_id], references: [user_id])
+  department            Department?       @relation("DepartmentEmployees", fields: [department_id], references: [department_id])
+  direct_manager        Employee?         @relation("DirectManager", fields: [direct_manager_id], references: [emp_id])
+  manages_direct        Employee[]        @relation("DirectManager")
+  position              Position?         @relation(fields: [position_id], references: [position_id])
+  skip_level_manager    Employee?         @relation("SkipLevelManager", fields: [skip_level_manager_id], references: [emp_id])
+  manages_skip          Employee[]        @relation("SkipLevelManager")
+  updated_by            User?             @relation("UpdatedBy", fields: [updated_by_id], references: [user_id])
+  user                  User?             @relation(fields: [user_id], references: [user_id])
+}
+
 enum RoleType {
   superAdmin
   subAdmin
@@ -40,134 +158,4 @@ enum EmploymentStatus {
   Terminated
   On_Leave
   Suspended
-}
-
-model User {
-  user_id            Int           @id @default(autoincrement())
-  email              String        @unique
-  password_hash      String
-  is_active          Boolean       @default(true)
-  last_login         DateTime?
-  created_at         DateTime      @default(now())
-  updated_at         DateTime      @default(now())
-  employees          Employee[]
-  departmentsCreated Department[]  @relation("CreatedByUser")
-  user_roles         UserRole[]
-  assignedUserRoles  UserRole[]    @relation("AssignedBy")
-  employeesCreated   Employee[]    @relation("CreatedBy")
-  employeesUpdated   Employee[]    @relation("UpdatedBy")
-}
-
-model Role {
-  role_id        Int        @id @default(autoincrement())
-  role_name      String     @unique
-  role_type      RoleType
-  role_description String?
-  permissions    Json?
-  is_active      Boolean    @default(true)
-  created_at     DateTime   @default(now())
-  user_roles     UserRole[]
-}
-
-model UserRole {
-  user_role_id   Int      @id @default(autoincrement())
-  user           User     @relation(fields: [user_id], references: [user_id])
-  user_id        Int
-  role           Role     @relation(fields: [role_id], references: [role_id])
-  role_id        Int
-  assigned_at    DateTime @default(now())
-  assigned_by    User?    @relation("AssignedBy", fields: [assigned_by_id], references: [user_id])
-  assigned_by_id Int?
-  is_active      Boolean  @default(true)
-}
-
-model Department {
-  department_id       Int          @id @default(autoincrement())
-  department_name     String
-  department_code     String       @unique
-  description         String?
-  parent_department_id Int?
-  created_at          DateTime     @default(now())
-  is_active           Boolean      @default(true)
-  created_by_id       Int
-
-  // Relations
-  created_by          User         @relation("CreatedByUser", fields: [created_by_id], references: [user_id])
-  
-  // Self relation for parent department
-  parent_department   Department?  @relation("ParentDepartment", fields: [parent_department_id], references: [department_id])
-  children            Department[] @relation("ParentDepartment")
-
-  // Department head relation (single employee)
-  department_head_id  Int?
-  department_head     Employee?    @relation("DepartmentHead", fields: [department_head_id], references: [emp_id])
-
-  // Employees belonging to this department
-  employees           Employee[]   @relation("DepartmentEmployees")
-  
-  // Positions in this department
-  positions           Position[]
-}
-
-model Position {
-  position_id     Int          @id @default(autoincrement())
-  position_title  String
-  position_code   String       @unique
-  job_description String?
-  required_skills Json?
-  salary_range_min Float?
-  salary_range_max Float?
-  position_level  Int?
-  is_active       Boolean      @default(true)
-
-  // Relations
-  department_id   Int
-  department      Department   @relation(fields: [department_id], references: [department_id])
-  employees       Employee[]
-}
-
-model Employee {
-  emp_id                Int               @id @default(autoincrement())
-  user_id               Int?
-  employee_code         String            @unique
-  first_name            String
-  last_name             String
-  personal_email        String?
-  phone_number          String?
-  emergency_contact     Json?
-  date_of_birth         DateTime?
-  gender                Gender?
-  address               Json?
-  department_id         Int?
-  position_id           Int?
-  employment_type       EmploymentType?
-  work_location         WorkLocation?
-  hire_date             DateTime
-  probation_end_date    DateTime?
-  confirmation_date     DateTime?
-  termination_date      DateTime?
-  direct_manager_id     Int?
-  skip_level_manager_id Int?
-  employment_status     EmploymentStatus? @default(Active)
-  is_people_manager     Boolean           @default(false)
-  created_at            DateTime          @default(now())
-  created_by_id         Int?
-  updated_at            DateTime          @default(now())
-  updated_by_id         Int?
-
-  // Relations
-  user                  User?             @relation(fields: [user_id], references: [user_id])
-  department            Department?       @relation("DepartmentEmployees", fields: [department_id], references: [department_id])
-  position              Position?         @relation(fields: [position_id], references: [position_id])
-  
-  direct_manager        Employee?         @relation("DirectManager", fields: [direct_manager_id], references: [emp_id])
-  skip_level_manager    Employee?         @relation("SkipLevelManager", fields: [skip_level_manager_id], references: [emp_id])
-  manages_direct        Employee[]        @relation("DirectManager")
-  manages_skip          Employee[]        @relation("SkipLevelManager")
-  
-  created_by            User?             @relation("CreatedBy", fields: [created_by_id], references: [user_id])
-  updated_by            User?             @relation("UpdatedBy", fields: [updated_by_id], references: [user_id])
-
-  // Departments where this employee is the head
-  heads_departments     Department[]      @relation("DepartmentHead")
 }

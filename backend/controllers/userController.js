@@ -117,7 +117,7 @@ async function updateUserPass(req,res){  //forgot password functionality
         password_hash : hashedpass
       }
     })
-    return res.status(200).json({message : "Password updated sexfully"},userpass);
+    return res.status(200).json({message : "Password updated successfully"},userpass);
   }
   catch(error){
     return res.status(500).json({message : "Failed to update"});
@@ -125,7 +125,7 @@ async function updateUserPass(req,res){  //forgot password functionality
 }
 
 async function inactiveUser(req,res){
- const userid = parseInt(req.params.id,10);
+ const userid = parseInt(req.params.id, 10);
   if(!userid){
     return res.status(400).json({message : "Please enter Email"});
   }
@@ -159,7 +159,6 @@ async function activeUser(req,res){
       is_active : true
     }
   })
-  
 
   return res.status(200).json({message : "user Activated"})
 }

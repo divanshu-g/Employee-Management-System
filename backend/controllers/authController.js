@@ -39,7 +39,7 @@ async function login(req, res, next) {
       return res.status(403).json({ message: 'User is not authorized to login' });
     }
 
-    //lastlogin attached whenever login happenns 
+    //last login attached whenever login happens 
     await prisma.user.update({
       where: { email },
       data: {

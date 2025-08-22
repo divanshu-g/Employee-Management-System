@@ -12,6 +12,7 @@ const departmentRoutes = require("./routes/departmentRoutes");
 const positionRoutes = require("./routes/positionRoutes");
 const employeeRoutes = require("./routes/employeeRoutes");
 
+
 const PORT = process.env.PORT || 3000;
 
 const app = express();
@@ -25,6 +26,7 @@ app.use("/api/userRole", userRoleRoutes)
 app.use("/api/department", departmentRoutes);
 app.use("/api/position", positionRoutes);
 app.use("/api/employee", employeeRoutes);
+
 
 
 // Example protected route:

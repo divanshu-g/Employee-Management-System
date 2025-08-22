@@ -91,7 +91,7 @@ model Employee {
   employee_code         String            @unique
   first_name            String
   last_name             String
-  personal_email        String?
+  personal_email        String?           
   phone_number          String?
   emergency_contact     Json?
   date_of_birth         DateTime?

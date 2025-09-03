@@ -28,6 +28,7 @@ Built with **Node.js, Express.js, Prisma ORM, and PostgreSQL**.
 
 ## 📂 Project Structure
 
+```bash
 .
 ├── prisma/
 │ └── schema.prisma # Database schema
@@ -40,9 +41,7 @@ Built with **Node.js, Express.js, Prisma ORM, and PostgreSQL**.
 ├── .env # Environment variables (DATABASE_URL, JWT_SECRET, etc.)
 ├── package.json
 └── README.md
-
-text
-
+```
 ---
 
 ## 🗄️ Database Schema (Prisma)
@@ -186,9 +185,7 @@ npm run dev
 
 This project is licensed under the **MIT License**.
 
-MIT License
-
-Copyright (c) 2025 YOUR NAME
+Copyright (c) 2025 Divanshu Garg, Swastik Verma, Raghav Negi, Priyanshu Bindal
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -207,4 +204,3 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-text

@@ -1,59 +1,66 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import {jwtDecode} from "jwt-decode";
+import { useRouter } from "next/navigation";
 
-export default function EmployeeLoginPage() {
+export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [animate, setAnimate] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setAnimate(true);
+    // Could add checks if user already logged in via session here (optional)
   }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setLoading(true);
+
     try {
-      const res = await fetch("http://localhost:8080/api/auth/login", {
+      // Login API sets session cookie
+      const loginRes = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ email, password }),
       });
-      const data = await res.json();
 
-      if (!res.ok) {
-        setError(data.message || "Login failed");
+      if (!loginRes.ok) {
+        const errData = await loginRes.json();
+        setError(errData.message || "Login failed");
         setLoading(false);
         return;
       }
 
-      // Decode the JWT token to check roles
-      let roles = [];
-      try {
-        const decoded = jwtDecode(data.token);
-        roles = decoded.roles || [];
-      } catch {
-        setError("Invalid token received.");
+      // After login, fetch user profile to get roles from session
+      const profileRes = await fetch("http://localhost:8080/api/auth/profile", {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!profileRes.ok) {
+        setError("Failed to fetch user profile");
         setLoading(false);
         return;
       }
 
-      // Check if user roles contain employee only
-      if (!roles.includes("employee")) {
-        setError("Access denied: Only Employee allowed to sign in here.");
-        setLoading(false);
-        return;
-      }
+      const userProfile = await profileRes.json();
 
-      setLoading(false);
-      window.location.href = "/employee-dashboard";  // Change redirect as appropriate
-    } catch {
+      // Check roles for redirect - allow only superAdmin or subAdmin
+      const roles = userProfile.roles || [];
+      if (roles.includes("employee")) {
+        setLoading(false);
+        router.push("/dashboard"); // Next.js router redirect to dashboard
+      } else {
+        setError("Access denied: Only Employees are allowed");
+        setLoading(false);
+      }
+    } catch (err) {
       setError("Network error, please try again.");
       setLoading(false);
     }
@@ -81,7 +88,7 @@ export default function EmployeeLoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="employee@example.com"
+                placeholder="admin@example.com"
                 className="w-full rounded-md border border-gray-700 bg-gray-800 text-gray-200 px-4 py-3 text-base placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -188,6 +195,7 @@ export default function EmployeeLoginPage() {
     </div>
   );
 }
+
 
 function LinkBack() {
   return (

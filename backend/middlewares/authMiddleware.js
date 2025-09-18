@@ -1,24 +1,15 @@
-const jwt = require('jsonwebtoken');
-const JWT_SECRET = process.env.JWT_SECRET;
+// const jwt = require('jsonwebtoken');
+// const JWT_SECRET = process.env.JWT_SECRET;
 
 function authMiddleware(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer '))
-    return res.status(401).json({ message: 'Missing or invalid auth header' });
-
-  const token = authHeader.split(' ')[1];
-  try {
-    const payload = jwt.verify(token, JWT_SECRET);
-    req.user = {
-        user_id: payload.userId,
-        email: payload.email,
-        roles: payload.roles,
-      };
+  if (req.session && req.session.user) {
+    req.user = req.session.user; // Attach session user info to req.user
     next();
-  } catch (err) {
-    return res.status(401).json({ message: 'Invalid or expired token' });
+  } else {
+    return res.status(401).json({ message: 'Unauthorized: Please login.' });
   }
 }
 
 module.exports = authMiddleware;
+
 

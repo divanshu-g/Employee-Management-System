@@ -1,10 +1,7 @@
 const prisma = require('../prismaClient');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
-const ALLOWED_ROLES = ['superAdmin', 'subAdmin', 'employee']; // Only these roles allowed for login
+const ALLOWED_ROLES = ['superAdmin', 'subAdmin', 'employee']; // Allowed roles for login
 
 async function login(req, res, next) {
   const { email, password } = req.body;
@@ -39,33 +36,31 @@ async function login(req, res, next) {
       return res.status(403).json({ message: 'User is not authorized to login' });
     }
 
-    //last login attached whenever login happens 
+    // Update last login
     await prisma.user.update({
       where: { email },
-      data: {
-        last_login: new Date(), // stores current timestamp
-      },
+      data: { last_login: new Date() },
     });
 
-    // 4. Generate JWT token with user info and roles
-    const tokenPayload = {
+    // Set session user info instead of generating JWT
+    req.session.user = {
       userId: user.user_id,
       email: user.email,
       roles: roles,
     };
 
-    const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '1h' });
-
-    // 5. Return token and user info (excluding sensitive fields)
+    // Return success response, no token needed with session
     return res.json({
-      message: 'Login successful',
-      token,
+      message: 'Login successful, session established',
     });
 
   } catch (error) {
     next(error);
   }
 }
+
+
+
 
 module.exports = {
   login,

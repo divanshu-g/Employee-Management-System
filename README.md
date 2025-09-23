@@ -185,7 +185,7 @@ npm run dev
 
 This project is licensed under the **MIT License**.
 
-Copyright (c) 2025 Divanshu Garg, Swastik Verma, Raghav Negi, Priyanshu Bindal
+Copyright (c) 2025 Divanshu Garg, Swastik Verma, Raghav Nagi, Priyanshu Bindal
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -15,13 +15,23 @@ model User {
   last_login         DateTime?
   created_at         DateTime     @default(now())
   updated_at         DateTime     @default(now()) @updatedAt
+
   departmentsCreated Department[] @relation("CreatedByUser")
   departmentsUpdated Department[]  @relation("UpdatedByUser")
+
   employeesCreated   Employee[]   @relation("CreatedBy")
   employeesUpdated   Employee[]   @relation("UpdatedBy")
   employees          Employee[]
+   
   assignedUserRoles  UserRole[]   @relation("AssignedBy")
   user_roles         UserRole[]
+
+  weeklyTimesheets   WeeklyTimesheet[] @relation("TimesheetUser")
+  approvedTimesheets WeeklyTimesheet[] @relation("TimesheetApprovedBy") 
+
+
+  leaves             Leave[]                 @relation("LeaveUser")
+  approvedLeaves     Leave[]                 @relation("LeaveApprovedBy")
 }
 
 model Role {
@@ -123,6 +133,104 @@ model Employee {
   manages_skip          Employee[]        @relation("SkipLevelManager")
   updated_by            User?             @relation("UpdatedBy", fields: [updated_by_id], references: [user_id])
   user                  User?             @relation(fields: [user_id], references: [user_id])
+}
+
+/* ========== Timesheet / Leave (Employee-anchored) ========== */
+
+
+model WeeklyTimesheet {
+  weekly_timesheet_id Int              @id @default(autoincrement())
+  user_id             Int
+  week_start          DateTime         // Always Monday
+  status              TimesheetStatus  @default(Open)
+  created_at          DateTime         @default(now())
+  updated_at          DateTime         @default(now()) @updatedAt
+
+  // Manager approval workflow
+  submitted_at    DateTime?          // Employee submitted
+  approved_at     DateTime?          // Manager approved whole week
+  approved_by     Int?               // Manager's user_id
+
+  // Relations
+  user     User  @relation("TimesheetUser", fields: [user_id], references: [user_id])
+  approver User? @relation("TimesheetApprovedBy", fields: [approved_by], references: [user_id])
+
+  days    TimesheetDay[]
+
+  @@unique([user_id, week_start])
+}
+
+model TimesheetDay {
+  timesheetday_id      Int               @id @default(autoincrement())
+  weekly_timesheet_id  Int 
+  leave_id             Int?
+  date                 DateTime          // Mon..Sun
+  check_in             DateTime?
+  check_out            DateTime?
+  duration             Float?            // hours
+  summary              String?
+
+  // Statuses
+  status          TimesheetDayStatus @default(Pending)
+
+  // Audit
+  created_by Int?
+  updated_by Int?
+
+  // Relations
+  weekly_timesheet WeeklyTimesheet @relation(fields: [weekly_timesheet_id], references: [weekly_timesheet_id])
+  leave           Leave?           @relation(fields: [leave_id], references: [leave_id])
+
+  @@unique([weekly_timesheet_id, date])
+}
+
+model Leave {
+  leave_id    Int        @id @default(autoincrement())
+  user_id     Int
+  start_date  DateTime
+  end_date    DateTime
+  leaveType   LeaveType
+  reason      String?
+  leave_duration Float?             // 0.5 = half day, 1 = full day
+
+  status      ApprovalStatus   @default(Pending)  // approval flow
+  applied_at  DateTime         @default(now())
+  approved_at DateTime?
+  approved_by Int?
+
+  // Relations
+  user     User  @relation("LeaveUser", fields: [user_id], references: [user_id])
+  approver User? @relation("LeaveApprovedBy", fields: [approved_by], references: [user_id])
+
+  // One Leave can expand into multiple TimesheetDay records
+  timesheetDays TimesheetDay[]
+}
+
+enum ApprovalStatus {
+  Pending
+  Approved
+  Rejected
+}
+
+enum TimesheetStatus {
+  Open
+  Submitted
+}
+
+enum TimesheetDayStatus {
+  Pending       // default, waiting for entry
+  Filled        // checked in/out & duration provided
+  Leave         // Leave applied by employee for that day
+  Holiday       // Sat/Sun automatically
+  AutoLeave     // Missed entry, auto-marked by system
+}
+
+enum LeaveType {
+  Sick
+  Paid
+  Unpaid
+  Halfday
+  None
 }
 
 enum RoleType {

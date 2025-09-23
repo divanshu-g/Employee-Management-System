@@ -147,7 +147,7 @@ catch(error){
 }
 
 async function activeUser(req,res){
- const userid = parseInt(req.params.id,10);
+ const userid = parseInt(req.params.id, 10);
   if(!userid){
     return res.status(400).json({message : "Please enter Email"});
   }

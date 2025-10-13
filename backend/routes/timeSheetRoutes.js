@@ -8,7 +8,6 @@ const timeSheetController = require("../controllers/TimeSheetController")
 const managementRole = ["superAdmin", "subAdmin", "employee"]
 
 router.post("/entry", authMiddleware, roleMiddleware(managementRole), timeSheetController.TimesheetEntry);
-router.post("/leave",authMiddleware,roleMiddleware(managementRole), timeSheetController.leave);
-router.get("/getweekly", authMiddleware, roleMiddleware(managementRole), timeSheetController.getWeeklyTimesheet);
+
 
 module.exports = router

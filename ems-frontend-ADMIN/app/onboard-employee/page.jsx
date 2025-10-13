@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-const API_BASE = 'http://localhost:8080/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 export default function OnboardPage() {
   const router = useRouter();
@@ -16,7 +16,7 @@ export default function OnboardPage() {
       setLoadingUsers(true);
       setError('');
       try {
-        const res = await fetch(`${API_BASE}/user`, { credentials: 'include' });
+        const res = await fetch(`${API_BASE}/api/user`, { credentials: 'include' });
         if (!res.ok) throw new Error('Failed to fetch users');
         const data = await res.json();
         setUsers(data);

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function RolesPage() {
   const [roles, setRoles] = useState([]);
@@ -15,7 +15,7 @@ export default function RolesPage() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API_URL}/role`, { method: 'GET', credentials: 'include' });
+      const res = await fetch(`${API_URL}/api/role`, { method: 'GET', credentials: 'include' });
       if (res.status === 401) {
         setError('Unauthorized. Please login.');
         setRoles([]);
@@ -39,7 +39,7 @@ export default function RolesPage() {
   async function handleDelete(id) {
     if (!confirm('Are you sure you want to delete this role?')) return;
     try {
-      const res = await fetch(`${API_URL}/role/${id}`, { method: 'DELETE', credentials: 'include' });
+      const res = await fetch(`${API_URL}/api/role/${id}`, { method: 'DELETE', credentials: 'include' });
       if (!res.ok) {
         const errData = await res.json();
         setError(errData.message || 'Failed to delete role.');

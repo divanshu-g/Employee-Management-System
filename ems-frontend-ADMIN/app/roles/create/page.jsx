@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function CreateRolePage() {
   const router = useRouter();
@@ -38,7 +38,7 @@ export default function CreateRolePage() {
     setError('');
 
     try {
-      const res = await fetch(`${API_URL}/role`, {
+      const res = await fetch(`${API_URL}/api/role`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function EditRolePage() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export default function EditRolePage() {
       setLoadingRole(true);
       setError('');
       try {
-        const res = await fetch(`${API_URL}/role/${id}`, { method: 'GET', credentials: 'include' });
+        const res = await fetch(`${API_URL}/api/role/${id}`, { method: 'GET', credentials: 'include' });
         if (res.status === 404) {
           setError('Role not found.');
           setLoadingRole(false);
@@ -67,7 +67,7 @@ export default function EditRolePage() {
     setError('');
 
     try {
-      const res = await fetch(`${API_URL}/role/${id}`, {
+      const res = await fetch(`${API_URL}/api/role/${id}`, {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

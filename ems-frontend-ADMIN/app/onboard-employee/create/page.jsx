@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-
-const API_BASE = 'http://localhost:8080/api';
+import { useRouter } from 'next/navigation'; 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 export default function CreateUserPage() {
   const router = useRouter();
@@ -32,7 +31,7 @@ export default function CreateUserPage() {
     }
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/user`, {
+      const res = await fetch(`${API_BASE}/api/user`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ email: form.email, password: form.password }),

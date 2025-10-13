@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-const API_BASE = 'http://localhost:8080/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 export default function AssignRolesPage() {
   const [users, setUsers] = useState([]);
@@ -21,7 +21,7 @@ export default function AssignRolesPage() {
     async function fetchUsers() {
       setLoadingUsers(true);
       try {
-        const res = await fetch(`${API_BASE}/user`, { credentials: 'include' });
+        const res = await fetch(`${API_BASE}/api/user`, { credentials: 'include' });
         if (!res.ok) throw new Error('Failed to fetch users');
         const data = await res.json();
         setUsers(data);
@@ -35,7 +35,7 @@ export default function AssignRolesPage() {
     async function fetchRoles() {
       setLoadingRoles(true);
       try {
-        const res = await fetch(`${API_BASE}/role`, { credentials: 'include' });
+        const res = await fetch(`${API_BASE}/api/role`, { credentials: 'include' });
         if (!res.ok) throw new Error('Failed to fetch roles');
         const data = await res.json();
         setRoles(data);

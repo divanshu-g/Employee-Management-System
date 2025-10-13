@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const plainPass = "admin123";
+const plainPass = "softwaredev123";
 async function user() {
   const password = async () => {
     const hash = await bcrypt.hash(plainPass, 10);

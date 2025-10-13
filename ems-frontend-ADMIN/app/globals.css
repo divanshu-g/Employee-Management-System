@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+@keyframes fadein { from{opacity:0} to{opacity:1} }
+@keyframes fadein-up { from{opacity:0;transform:translateY(30px);} to{opacity:1;transform:none;} }
+@keyframes fadein-down { from{opacity:0;transform:translateY(-30px);} to{opacity:1;transform:none;} }
+@keyframes bounce-slow { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-4px);} }
+@keyframes spin-slow { to { transform:rotate(360deg);} }
+
+.animate-fadein { animation: fadein 1s both; }
+.animate-fadein-up { animation: fadein-up 1s cubic-bezier(.19,1,.22,1.06) both; }
+.animate-fadein-down { animation: fadein-down 1s cubic-bezier(.19,1,.22,1.06) both; }
+.group-hover\:animate-bounce-slow:hover svg { animation: bounce-slow 1.4s infinite; }
+.group-hover\:animate-pulse:hover svg { animation: pulse 1.2s infinite; }
+.group-hover\:animate-spin-slow:hover svg, .animate-spin-slow { animation: spin-slow 5s linear infinite; }
+

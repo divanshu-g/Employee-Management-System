@@ -51,8 +51,9 @@ export default function CreateRolePage() {
         setLoading(false);
         return;
       }
+
       setLoading(false);
-      router.push('/roles'); // redirect after successful create
+      router.push('/roles');
     } catch {
       setError('Network error.');
       setLoading(false);
@@ -75,9 +76,11 @@ export default function CreateRolePage() {
             Return to Roles
           </button>
         </div>
+
         {error && <p className="text-red-500 mb-6 font-semibold">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Role Name */}
           <div>
             <label htmlFor="role_name" className="block mb-2 font-semibold">
               Role Name <span className="text-red-500">*</span>
@@ -95,23 +98,28 @@ export default function CreateRolePage() {
             />
           </div>
 
+          {/* Role Type (Dropdown) */}
           <div>
             <label htmlFor="role_type" className="block mb-2 font-semibold">
               Role Type <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
+            <select
               id="role_type"
               name="role_type"
               value={form.role_type}
               onChange={handleChange}
               required
               disabled={loading}
-              placeholder="E.g. superAdmin"
-              className="w-full rounded border border-gray-600 bg-gray-900 p-3 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            />
+              className="w-full rounded border border-gray-600 bg-gray-900 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            >
+              <option value="">Select Role Type</option>
+              <option value="superAdmin">superAdmin</option>
+              <option value="subAdmin">subAdmin</option>
+              <option value="employee">employee</option>
+            </select>
           </div>
 
+          {/* Role Description */}
           <div>
             <label htmlFor="role_description" className="block mb-2 font-semibold">
               Description
@@ -128,6 +136,7 @@ export default function CreateRolePage() {
             />
           </div>
 
+          {/* Permissions */}
           <div>
             <label htmlFor="permissions" className="block mb-2 font-semibold">
               Permissions (comma separated)
@@ -144,6 +153,7 @@ export default function CreateRolePage() {
             />
           </div>
 
+          {/* Active Checkbox */}
           <div className="flex items-center space-x-3">
             <input
               type="checkbox"
@@ -159,6 +169,7 @@ export default function CreateRolePage() {
             </label>
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}

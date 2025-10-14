@@ -44,7 +44,7 @@ async function login(req, res, next) {
 
     // Set session user info instead of generating JWT
     req.session.user = {
-      userId: user.user_id,
+      user_id: user.user_id,
       email: user.email,
       roles: roles,
     };

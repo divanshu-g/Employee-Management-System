@@ -5,26 +5,24 @@ const ALLOWED_ROLES = ["superAdmin", "subAdmin"];
 async function createRoles(req, res, next) {
   try {
     const userRoles = req.user.roles || [];
-
     const allowed = ALLOWED_ROLES.some((r) => userRoles.includes(r));
-
     if (!allowed) {
-      return res
-        .status(403)
-        .json({ message: "Forbidden: Not authorized to create roles." });
+      return res.status(403).json({ message: "Forbidden: Not authorized to create roles." });
     }
 
-    const { role_name, role_type, role_description, permissions, is_active } =
-      req.body;
+    let { role_name, role_type, role_description, permissions, is_active } = req.body;
+
+    // Trim all inputs to avoid whitespace conflicts
+    role_name = role_name ? role_name.trim() : "";
+    role_type = role_type ? role_type.trim() : "";
+    role_description = role_description ? role_description.trim() : null;
+    permissions = permissions ? permissions.trim() : null;
 
     if (!role_name || !role_type) {
-      return res
-        .status(400)
-        .json({ message: "role_name and role_type are required" });
+      return res.status(400).json({ message: "role_name and role_type are required" });
     }
 
     const newRole = await prisma.role.create({
-      // in prisma always send data as object
       data: {
         role_name,
         role_type,
@@ -102,7 +100,7 @@ async function updateRole(req, res, next) {
   }
 }
 
-async function deleteRole(req, res, next) {
+async function deleteRole(req, res) {
   // Enforce allowed roles
   const userRoles = req.user.roles || [];
   const allowed = ALLOWED_ROLES.some((r) => userRoles.includes(r));
@@ -123,7 +121,6 @@ async function deleteRole(req, res, next) {
     if (error.code === "P2025") {
       return res.status(404).json({ message: "Role not found" });
     }
-    next(error);
   }
 }
 

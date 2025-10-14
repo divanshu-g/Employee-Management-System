@@ -16,6 +16,8 @@ export default function LoginPage() {
     // Could add checks if user already logged in via session here (optional)
   }, []);
 
+  const apiurl = process.env.NEXT_PUBLIC_API_URL;
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
@@ -23,7 +25,7 @@ export default function LoginPage() {
 
     try {
       // Login API sets session cookie
-      const loginRes = await fetch("http://localhost:8080/api/auth/login", {
+      const loginRes = await fetch(`${apiurl}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -38,7 +40,7 @@ export default function LoginPage() {
       }
 
       // After login, fetch user profile to get roles from session
-      const profileRes = await fetch("http://localhost:8080/api/auth/profile", {
+      const profileRes = await fetch(`${apiurl}/api/auth/profile`, {
         method: "GET",
         credentials: "include",
       });

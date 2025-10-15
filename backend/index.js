@@ -12,6 +12,7 @@ const userRoleRoutes = require("./routes/userRoleRoutes");
 const departmentRoutes = require("./routes/departmentRoutes");
 const positionRoutes = require("./routes/positionRoutes");
 const employeeRoutes = require("./routes/employeeRoutes");
+const timeSheetRoutes = require("./routes/timeSheetRoutes");
 
 const PORT = process.env.PORT || 3000;
 
@@ -46,6 +47,7 @@ app.use("/api/userRole", userRoleRoutes);
 app.use("/api/department", departmentRoutes);
 app.use("/api/position", positionRoutes);
 app.use("/api/employee", employeeRoutes);
+app.use("/api/timesheet", timeSheetRoutes);
 
 // Example protected route using your middlewares
 app.get('/api/protected', authMiddleware, roleMiddleware(['superAdmin', 'subAdmin', 'employee']), (req, res) => {

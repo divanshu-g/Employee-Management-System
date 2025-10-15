@@ -28,7 +28,6 @@ const createPosition = async (req, res) => {
             "Missing required fields: position_title, position_code, department_id, salary, and position_level are all required.",
         });
     }
-    console.log("22222222222222222222", req.body);
     
     const position = await primsa.position.create({
       data: {

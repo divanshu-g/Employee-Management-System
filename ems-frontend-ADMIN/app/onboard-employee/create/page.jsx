@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation'; 
+import ProtectedRoute from '@/components/ProtectedRoute';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
-export default function CreateUserPage() {
+function CreateUserPage() {
   const router = useRouter();
 
   const [form, setForm] = useState({
@@ -98,5 +99,12 @@ export default function CreateUserPage() {
         </form>
       </div>
     </div>
+  );
+}
+export default function CreateEmployeePage() {
+  return (
+    <ProtectedRoute requiredRoles={['superAdmin', 'subAdmin']}>
+      <CreateUserPage />
+    </ProtectedRoute>
   );
 }

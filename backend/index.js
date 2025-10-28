@@ -37,6 +37,8 @@ app.use(session({
 app.use(cors({
   origin: ['http://localhost:3000', 'http://localhost:3001'],
   credentials: true,          // Allow cookies to be sent by client
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Define your routes
@@ -53,9 +55,6 @@ app.use("/api/timesheet", timeSheetRoutes);
 app.get('/api/protected', authMiddleware, roleMiddleware(['superAdmin', 'subAdmin', 'employee']), (req, res) => {
   res.json({ message: 'Access granted to protected resource!', user: req.user });
 });
-
-
-
 
 // Start server
 app.listen(PORT, () => {

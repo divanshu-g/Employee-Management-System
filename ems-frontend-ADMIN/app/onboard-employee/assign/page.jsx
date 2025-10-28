@@ -68,7 +68,7 @@ export default function AssignRolesPage() {
     setMessage('');
 
     try {
-      const res = await fetch(`${API_BASE}/userRole`, {
+      const res = await fetch(`${API_BASE}/api/userRole`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

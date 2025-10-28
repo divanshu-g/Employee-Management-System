@@ -1,11 +1,11 @@
 'use client';
-
+import ProtectedRoute from '@/components/ProtectedRoute';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export default function EditRolePage() {
+function EditRoleContent() {
   const router = useRouter();
   const { id } = useParams();
 
@@ -207,5 +207,14 @@ export default function EditRolePage() {
         </form>
       </div>
     </div>
+  );
+}
+
+
+export default function EditRolePage() {
+  return (
+    <ProtectedRoute requiredRoles={['superAdmin']}>
+      <EditRoleContent />
+    </ProtectedRoute>
   );
 }

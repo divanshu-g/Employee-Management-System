@@ -1,8 +1,10 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import PublicRoute from "@/components/PublicRoute";
+import { login } from "@/utils/auth";
 
-export default function LoginPage() {
+function LoginPageContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -10,13 +12,17 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [animate, setAnimate] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     setAnimate(true);
-    // Could add checks if user already logged in via session here (optional)
-  }, []);
-
-  const apiurl = process.env.NEXT_PUBLIC_API_URL;
+    
+    // Display error messages from URL params
+    const errorParam = searchParams.get('error');
+    if (errorParam === 'unauthorized') {
+      setError('You do not have permission to access that page.');
+    }
+  }, [searchParams]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -24,40 +30,20 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Login API sets session cookie
-      const loginRes = await fetch(`${apiurl}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, password }),
-      });
+      const result = await login(email, password);
 
-      if (!loginRes.ok) {
-        const errData = await loginRes.json();
-        setError(errData.message || "Login failed");
+      if (!result.success) {
+        setError(result.error);
         setLoading(false);
         return;
       }
-
-      // After login, fetch user profile to get roles from session
-      const profileRes = await fetch(`${apiurl}/api/auth/profile`, {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (!profileRes.ok) {
-        setError("Failed to fetch user profile");
-        setLoading(false);
-        return;
-      }
-
-      const userProfile = await profileRes.json();
 
       // Check roles for redirect - allow only superAdmin or subAdmin
-      const roles = userProfile.roles || [];
+      const roles = result.user.roles || [];
       if (roles.includes("superAdmin") || roles.includes("subAdmin")) {
-        setLoading(false);
-        router.push("/dashboard"); // Next.js router redirect to dashboard
+        // Redirect to the page they tried to access, or dashboard
+        const redirect = searchParams.get('redirect') || '/dashboard';
+        router.push(redirect);
       } else {
         setError("Access denied: Only SuperAdmin or SubAdmin allowed.");
         setLoading(false);
@@ -76,7 +62,6 @@ export default function LoginPage() {
         ${animate ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"} transition-all duration-700 ease-in`}
       >
         <div className="max-w-md w-full space-y-8">
-          <LinkBack />
           <h2 className="text-3xl font-bold mb-2 text-white">Sign In As SuperAdmin/SubAdmin</h2>
           <p className="mb-6 text-gray-300">Enter your email and password to sign in!</p>
 
@@ -157,9 +142,13 @@ export default function LoginPage() {
                   Keep me logged in
                 </label>
               </div>
-              <a href="/reset-password" className="text-sm text-blue-400 hover:text-blue-300">
+              <button
+                type="button"
+                onClick={() => router.push('/reset-password')}
+                className="text-sm text-blue-400 hover:text-blue-300"
+              >
                 Forgot password?
-              </a>
+              </button>
             </div>
 
             <button
@@ -198,25 +187,10 @@ export default function LoginPage() {
   );
 }
 
-
-function LinkBack() {
+export default function LoginPage() {
   return (
-    <a
-      href="/"
-      className="inline-flex items-center mb-8 text-sm text-gray-400 hover:text-gray-200 transition-colors"
-    >
-      <svg
-        width="16"
-        height="16"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        viewBox="0 0 24 24"
-        className="mr-2"
-      >
-        <path d="M15 19l-7-7 7-7" />
-      </svg>
-      Back to dashboard
-    </a>
+    <PublicRoute>
+      <LoginPageContent />
+    </PublicRoute>
   );
 }

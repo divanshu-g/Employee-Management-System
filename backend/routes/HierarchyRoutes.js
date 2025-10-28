@@ -8,8 +8,8 @@ const prisma = require("../prismaClient");
 
 router.post(
   "/adduser/:user_Id/:prev_Id",
-  // authMiddleware,
-  // roleMiddleware(manage_roles),
+  authMiddleware,
+  roleMiddleware(manage_roles),
   async (req, res) => {
     try{
       // console.log(req.params.user_Id);
@@ -21,7 +21,7 @@ router.post(
   }
 );
 
-router.post("/changeteam/:user_Id/:new_prev_Id",async(req,res)=>{
+router.post("/changeteam/:user_Id/:new_prev_Id", authMiddleware, roleMiddleware(manage_roles), async(req,res)=>{
     try{
       const ans = await changeTeam(prisma,"Hierarchy",req.params)
       res.status(200).json(ans);

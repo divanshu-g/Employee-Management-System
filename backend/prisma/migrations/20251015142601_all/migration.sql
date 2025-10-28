@@ -149,7 +149,6 @@ CREATE TABLE "public"."WeeklyTimesheet" (
 CREATE TABLE "public"."TimesheetDay" (
     "timesheetday_id" SERIAL NOT NULL,
     "weekly_timesheet_id" INTEGER NOT NULL,
-    "attendance_id" INTEGER,
     "leave_id" INTEGER,
     "date" TIMESTAMP(3) NOT NULL,
     "check_in" TIMESTAMP(3),
@@ -178,6 +177,18 @@ CREATE TABLE "public"."Leave" (
     "approved_by" INTEGER,
 
     CONSTRAINT "Leave_pkey" PRIMARY KEY ("leave_id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."Hierarchy" (
+    "Hierarchy_id" SERIAL NOT NULL,
+    "prev_Id" INTEGER,
+    "user_Id" INTEGER,
+    "next_Id" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Hierarchy_pkey" PRIMARY KEY ("Hierarchy_id")
 );
 
 -- CreateIndex

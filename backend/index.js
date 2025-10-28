@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
+const service = require('micro_service-ems')
 require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
@@ -13,6 +14,7 @@ const departmentRoutes = require("./routes/departmentRoutes");
 const positionRoutes = require("./routes/positionRoutes");
 const employeeRoutes = require("./routes/employeeRoutes");
 const timeSheetRoutes = require("./routes/timeSheetRoutes");
+const Hierarchy = require("./routes/HierarchyRoutes")
 
 const PORT = process.env.PORT || 3000;
 
@@ -48,6 +50,8 @@ app.use("/api/department", departmentRoutes);
 app.use("/api/position", positionRoutes);
 app.use("/api/employee", employeeRoutes);
 app.use("/api/timesheet", timeSheetRoutes);
+app.use("/api/hierarchy",Hierarchy);
+
 
 // Example protected route using your middlewares
 app.get('/api/protected', authMiddleware, roleMiddleware(['superAdmin', 'subAdmin', 'employee']), (req, res) => {

@@ -206,6 +206,16 @@ model Leave {
   timesheetDays TimesheetDay[]
 }
 
+model Hierarchy{
+  Hierarchy_id Int @id @default(autoincrement())
+  prev_Id Int?
+  user_Id Int?         @unique
+  next_Id Int[]        @default([]) 
+  
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
 enum ApprovalStatus {
   Pending
   Approved

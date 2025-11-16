@@ -1,15 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const { login } = require('../controllers/authController');
+const authMiddleware = require('../middlewares/authMiddleware');
 
 router.post('/login', login);
-// In auth routes/controllers
-router.get('/profile', (req, res) => {
-  if (req.session && req.session.user) {
-    res.json(req.session.user);
-  } else {
-    res.status(401).json({ message: 'Unauthorized' });
-  }
+
+router.get('/profile', authMiddleware, (req, res) => {
+  res.json({
+    message: 'Authorized access',
+    user: req.user, // comes from decoded token
+  });
 });
 
 module.exports = router;

@@ -1,5 +1,6 @@
 const prisma = require('../prismaClient');
 const bcrypt = require('bcrypt');
+const jwt = require("jsonwebtoken")
 
 const ALLOWED_ROLES = ['superAdmin', 'subAdmin', 'employee']; // Allowed roles for login
 
@@ -42,24 +43,33 @@ async function login(req, res, next) {
       data: { last_login: new Date() },
     });
 
-    // Set session user info instead of generating JWT
-    req.session.user = {
+    const token = jwt.sign({
       user_id: user.user_id,
       email: user.email,
-      roles: roles,
-    };
+      roles,
+      is_active: user.is_active
+    },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    )
 
     // Return success response, no token needed with session
     return res.json({
-      message: 'Login successful, session established',
+      message: 'Login successful',
+      user: {
+        user_id: user.user_id,
+        email: user.email,
+        roles,
+        is_active: user.is_active,
+        last_login: user.last_login,
+      },
+      token
     });
 
   } catch (error) {
     next(error);
   }
 }
-
-
 
 
 module.exports = {

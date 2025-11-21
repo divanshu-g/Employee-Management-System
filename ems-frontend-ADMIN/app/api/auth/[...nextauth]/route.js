@@ -22,12 +22,12 @@ export const authOptions = {
             }),
           });
 
-          // ⛔️ Do NOT call loginRes.json() here
+          // Do NOT call loginRes.json() here
           if (!loginRes.ok) {
             throw new Error("Invalid credentials");
           }
 
-          // ✅ Parse once only
+          //  Parse once only
           const data = await loginRes.json();
           const user = data.user;
           const token = data.token;
@@ -62,24 +62,22 @@ export const authOptions = {
 
   callbacks: {
     async jwt({ token, user }) {
-      // ✅ when user logs in, store token info
-      console.log("JWT CALLBACK → user:", user);
-      console.log("JWT CALLBACK → token BEFORE:", token);
+      // when user logs in, store token info
+     
       if (user) {
         token.id = user.id;
         token.roles = user.roles;
         token.isActive = user.isActive;
         token.email = user.email;
-        token.accessToken = user.accessToken; // ✅ persist backend JWT
+        token.accessToken = user.accessToken; //  persist backend JWT
       }
-      console.log("JWT CALLBACK → token AFTER:", token);
+      
       return token;
     },
 
     async session({ session, token }) {
-      // ✅ expose token to frontend session
-      console.log("SESSION CALLBACK → TOKEN:", token);
-      console.log("SESSION CALLBACK → SESSION BEFORE:", session);
+      // expose token to frontend session
+     
       session.user = {
         id: token.id,
         email: token.email,
@@ -87,7 +85,7 @@ export const authOptions = {
         isActive: token.isActive,
       };
       session.accessToken = token.accessToken;
-      console.log("SESSION CALLBACK → SESSION AFTER:", session);
+      
       return session;
     },
   },

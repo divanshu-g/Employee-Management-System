@@ -1,12 +1,34 @@
 "use client";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useAuthorizedFetch } from "@/app/hooks/useAuthorizedFetch";
+import { 
+  Users, 
+  Building2, 
+  Briefcase, 
+  Clock, 
+  Activity,
+  UserPlus,
+  FileText,
+  CheckCircle2
+} from 'lucide-react';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { authorizedFetch } = useAuthorizedFetch();
+
+  const [stats, setStats] = useState({
+    employees: 0,
+    departments: 0,
+    positions: 0,
+    activeUsers: 0
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -14,7 +36,35 @@ export default function DashboardPage() {
     }
   }, [status, router]);
 
-  if (status === "loading") {
+  useEffect(() => {
+    if (session?.accessToken) {
+      fetchDashboardData();
+    }
+  }, [session?.accessToken]);
+
+  async function fetchDashboardData() {
+    try {
+      // Fetch counts in parallel using Promise.allSettled to handle potential failures gracefully
+      const [empRes, deptRes, posRes] = await Promise.allSettled([
+        authorizedFetch(`${API_URL}/api/employee`),
+        authorizedFetch(`${API_URL}/api/department`),
+        authorizedFetch(`${API_URL}/api/position`),
+      ]);
+
+      // Extract values if the promise was fulfilled, otherwise default to 0
+      const employees = empRes.status === 'fulfilled' ? (empRes.value.employees?.length || 0) : 0;
+      const departments = deptRes.status === 'fulfilled' ? (deptRes.value.departments?.length || 0) : 0;
+      const positions = posRes.status === 'fulfilled' ? (posRes.value.positions?.length || 0) : 0;
+
+      setStats({ employees, departments, positions, activeUsers: employees }); 
+    } catch (error) {
+      console.error("Dashboard fetch error:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (status === "loading" || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
         <div className="text-center">
@@ -30,8 +80,14 @@ export default function DashboardPage() {
   }
 
   const handleSignOut = async () => {
-    await signOut({ redirect: true, callbackUrl: "/signin" });
+    try {
+      await signOut({ redirect: false });  // clear cookies first
+      router.push("/signin");              // then redirect
+    } catch (err) {
+      console.error("Sign out failed:", err);
+    }
   };
+  
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">
@@ -96,66 +152,30 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <StatCard
               title="Total Employees"
-              value="247"
+              value={stats.employees}
               change="+12%"
-              icon={
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-              }
+              icon={<Users size={24} />}
               delay={0.2}
             />
             <StatCard
               title="Departments"
-              value="12"
+              value={stats.departments}
               change="+2"
-              icon={
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                  />
-                </svg>
-              }
+              icon={<Building2 size={24} />}
               delay={0.3}
             />
             <StatCard
-              title="Active Timesheets"
-              value="189"
+              title="Open Positions"
+              value={stats.positions}
               change="+5%"
-              icon={
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              }
+              icon={<Briefcase size={24} />}
               delay={0.4}
             />
             <StatCard
               title="Pending Reviews"
-              value="23"
+              value="8" // This is static for now as requested
               change="-3"
-              icon={
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                  />
-                </svg>
-              }
+              icon={<FileText size={24} />}
               delay={0.5}
             />
           </div>
@@ -166,14 +186,14 @@ export default function DashboardPage() {
               title="Onboard Employee"
               description="Add new team members and assign roles"
               icon="👤"
-              link="/onboard-employee"
+              link="onboard-employee" // Corrected route
               delay={0.6}
             />
             <ActionCard
               title="Manage Departments"
               description="Create and organize departments"
               icon="🏢"
-              link="/dashboard/departments"
+              link="/department"
               delay={0.7}
             />
             <ActionCard
@@ -187,21 +207,21 @@ export default function DashboardPage() {
               title="View Timesheets"
               description="Track employee work hours"
               icon="⏰"
-              link="/dashboard/timesheets"
+              link="/timesheets" 
               delay={0.9}
             />
             <ActionCard
               title="Employee Directory"
               description="Browse all employees"
               icon="📇"
-              link="/dashboard/employees"
+              link="/employee"
               delay={1.0}
             />
             <ActionCard
               title="Reports & Analytics"
               description="Generate insights and reports"
               icon="📊"
-              link="/dashboard/reports"
+              link="/reports" 
               delay={1.1}
             />
           </div>

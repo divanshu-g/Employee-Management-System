@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -7,7 +8,20 @@ import { useAuthorizedFetch } from '@/app/hooks/useAuthorizedFetch';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
-export default function AssignRolesPage() {
+// Loading fallback component
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center text-gray-300">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <p>Loading...</p>
+      </div>
+    </div>
+  );
+}
+
+// Main component that uses useSearchParams
+function AssignRolesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, status } = useSession();
@@ -274,5 +288,14 @@ export default function AssignRolesPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Exported page component with Suspense wrapper
+export default function AssignRolesPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <AssignRolesContent />
+    </Suspense>
   );
 }

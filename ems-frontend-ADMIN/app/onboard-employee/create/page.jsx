@@ -19,12 +19,41 @@ export default function CreateUserPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [passwordErrors, setPasswordErrors] = useState([]);
+
+  function validatePassword(password) {
+    const errors = [];
+    
+    if (password.length < 8) {
+      errors.push('Password must be at least 8 characters long');
+    }
+    if (!/[A-Z]/.test(password)) {
+      errors.push('Password must contain at least one uppercase letter');
+    }
+    if (!/[a-z]/.test(password)) {
+      errors.push('Password must contain at least one lowercase letter');
+    }
+    if (!/[0-9]/.test(password)) {
+      errors.push('Password must contain at least one number');
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      errors.push('Password must contain at least one special character (!@#$%^&*(),.?":{}|<>)');
+    }
+    
+    return errors;
+  }
 
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setError('');
     setMessage('');
+    
+    // Validate password in real-time
+    if (name === 'password') {
+      const errors = validatePassword(value);
+      setPasswordErrors(errors);
+    }
   }
 
   async function handleSubmit(e) {
@@ -34,6 +63,13 @@ export default function CreateUserPage() {
     
     if (!form.email || !form.password) {
       setError('Email and Password are required.');
+      return;
+    }
+
+    // Validate password strength before submitting
+    const errors = validatePassword(form.password);
+    if (errors.length > 0) {
+      setError('Please fix the password requirements before submitting.');
       return;
     }
 
@@ -49,6 +85,7 @@ export default function CreateUserPage() {
       
       setMessage('User created successfully.');
       setForm({ email: '', password: '' });
+      setPasswordErrors([]);
       
       // Optionally redirect after a delay
       setTimeout(() => {
@@ -76,6 +113,8 @@ export default function CreateUserPage() {
     router.replace('/signin');
     return null;
   }
+
+  const isPasswordValid = form.password && passwordErrors.length === 0;
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-6">
@@ -108,23 +147,58 @@ export default function CreateUserPage() {
               required
             />
           </div>
+          
           <div>
             <label htmlFor="password" className="block mb-2 font-semibold">Password</label>
             <input
               type="password"
               id="password"
               name="password"
-              placeholder="Enter password"
+              placeholder="Enter strong password"
               value={form.password}
               onChange={handleChange}
               disabled={loading}
               className="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
               required
             />
+            
+            {/* Password Requirements */}
+            <div className="mt-3 space-y-1 text-sm">
+              <p className="text-gray-400 font-semibold mb-2">Password Requirements:</p>
+              {[
+                { test: form.password.length >= 8, text: 'At least 8 characters' },
+                { test: /[A-Z]/.test(form.password), text: 'One uppercase letter' },
+                { test: /[a-z]/.test(form.password), text: 'One lowercase letter' },
+                { test: /[0-9]/.test(form.password), text: 'One number' },
+                { test: /[!@#$%^&*(),.?":{}|<>]/.test(form.password), text: 'One special character' },
+              ].map((requirement, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  {form.password ? (
+                    requirement.test ? (
+                      <span className="text-green-500">✓</span>
+                    ) : (
+                      <span className="text-red-500">✗</span>
+                    )
+                  ) : (
+                    <span className="text-gray-500">○</span>
+                  )}
+                  <span className={
+                    form.password 
+                      ? requirement.test 
+                        ? 'text-green-400' 
+                        : 'text-red-400'
+                      : 'text-gray-500'
+                  }>
+                    {requirement.text}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !isPasswordValid}
             className="w-full bg-blue-600 hover:bg-blue-700 rounded py-3 font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Creating...' : 'Create User'}

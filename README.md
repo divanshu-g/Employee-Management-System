@@ -1,3 +1,9 @@
+2210990289 Divanshu Garg
+2210992057 Prajwal
+Project Title - NexsusHr
+Type - Copyright
+Current Status - Waiting
+
 # 🏢 Employee Management System (Backend)
 
 A backend service for managing **users, roles, departments, employees, positions, and timesheets** in an organization.  
